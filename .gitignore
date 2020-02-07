@@ -1,0 +1,6 @@
+dist
+jcs.egg-info/
+*.pyc
+.tox
+*~
+.mypy_cache/
