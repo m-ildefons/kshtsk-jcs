@@ -13,7 +13,7 @@ You can install `jcs` inside of a virtualenv::
 
   virtualenv venv
   source venv/bin/activate
-  pip install git+git://github.com/toabctl/jcs.git
+  pip install git+git://github.com/toabctl/jcs.git#egg=jcs[aws,obs,jenkins]
 
 Usage
 =====
