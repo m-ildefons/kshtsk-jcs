@@ -128,14 +128,14 @@ def _parser():
 
 
 def _do_create(args):
-    import obs
-    import jen
+    from . import obs
+    from . import jen
     # download image
     img = obs.OBSImage(args.image_url)
     image_path = img.download()
     # AWS/EC2
     if args.cloud == 'ec2':
-        import aws
+        from . import aws
         # create ec2 ami
         aws_client = aws.AWSClient(
             args.aws_access_key_id, args.aws_secret_access_key, args.aws_region_name)
@@ -156,13 +156,13 @@ def _do_create(args):
 
 
 def _do_delete(args):
-    import jen
+    from . import jen
     # Jenkins
     jen_client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
                                    args.jenkins_password)
     jen_client.delete_node(args.jenkins_name)
     if args.cloud == 'ec2':
-        import aws
+        from . import aws
         aws_client = aws.AWSClient(
             args.aws_access_key_id, args.aws_secret_access_key, args.aws_region_name)
         tags={'jcs-jenkins-name': args.jenkins_name,
@@ -171,7 +171,7 @@ def _do_delete(args):
 
 
 def _do_aws_ec2_instance_create(args):
-    import aws
+    from . import aws
     client = aws.AWSClient(args.aws_access_key_id, args.aws_secret_access_key,
                            args.aws_region_name)
     client.ec2_instance_create(args.name, args.instance_type, args.image_name,
@@ -179,14 +179,14 @@ def _do_aws_ec2_instance_create(args):
 
 
 def _do_aws_ec2_instance_delete(args):
-    import aws
+    from . import aws
     client = aws.AWSClient(args.aws_access_key_id, args.aws_secret_access_key,
                            args.aws_region_name)
     client.ec2_instance_delete(args.id)
 
 
 def _do_aws_ec2_image_create(args):
-    import aws
+    from . import aws
     client = aws.AWSClient(args.aws_access_key_id, args.aws_secret_access_key,
                            args.aws_region_name)
     image = client.ec2_image_create(args.filepath,args.image_arch)
@@ -194,13 +194,13 @@ def _do_aws_ec2_image_create(args):
 
 
 def _do_obs_image_download(args):
-    import obs
+    from . import obs
     img = obs.OBSImage(args.url)
     img.download()
 
 
 def _do_jenkins_node_add(args):
-    import jen
+    from . import jen
     if not args.jenkins_url:
         raise Exception('No jenkins server url provided.')
     client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
@@ -210,7 +210,7 @@ def _do_jenkins_node_add(args):
 
 
 def _do_jenkins_node_delete(args):
-    import jen
+    from . import jen
     if not args.jenkins_url:
         raise Exception('No jenkins server url provided.')
     client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
