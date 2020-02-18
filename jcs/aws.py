@@ -102,6 +102,7 @@ class AWSClient:
         filters_all = [{'Name': 'tag:Owner', 'Values': ['jcs']}]
         for key, value in tags.items():
             filters_all.append({'Name': 'tag:{}'.format(key), 'Values': [value]})
+        print('EC2 search for deletable instances with filters: {}'.format(filters_all))
         for instance in self._ec2.instances.filter(Filters=filters_all):
             instance.terminate()
             print('EC2 instance "{}" deleted'.format(instance.id))
