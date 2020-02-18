@@ -86,7 +86,7 @@ class AWSClient:
             instance_id, instance.public_ip_address))
 
         # tags for the resources
-        tags_all = [{'Key': 'Owner', 'Value': 'jcs'}]
+        tags_all = []
         for key, value in tags.items():
             tags_all.append({'Key': key, 'Value': value})
         self._ec2_client.create_tags(Resources=[instance_id], Tags=tags_all)
@@ -99,7 +99,7 @@ class AWSClient:
 
     def ec2_instance_delete_by_tags(self, tags):
         # add same default tag as we add in ec2_instance_create()
-        filters_all = [{'Name': 'tag:Owner', 'Values': ['jcs']}]
+        filters_all = []
         for key, value in tags.items():
             filters_all.append({'Name': 'tag:{}'.format(key), 'Values': [value]})
         print('EC2 search for deletable instances with filters: {}'.format(filters_all))
