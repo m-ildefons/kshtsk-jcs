@@ -58,8 +58,9 @@ def _parser():
         '--jenkins-credential', default='storage-automation-for-root-user',
         help='The Jenkins credential description(!) that can be used to access '
         'the instance')
-    parser_create.add_argument('image_url', metavar='image-url',
-                               help='The image url to use (a URL from OBS/IBS')
+    parser_create.add_argument('image_name', metavar='image-name',
+                               help='The image name (must be already available '
+                               'in the cloud)')
     parser_create.add_argument('jenkins_name', metavar='jenkins-name',
                                help='The name of the new jenkins slave')
     parser_create.set_defaults(func=_do_create)
@@ -128,28 +129,28 @@ def _parser():
 
 
 def _do_create(args):
-    from . import obs
     from . import jen
-    # download image
-    img = obs.OBSImage(args.image_url)
-    image_path = img.download()
+
+    if not args.jenkins_url:
+        raise Exception('No JENKINS_URL given')
+
+    jen_client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
+                                   args.jenkins_password)
+
     # AWS/EC2
     if args.cloud == 'ec2':
         from . import aws
         # create ec2 ami
         aws_client = aws.AWSClient(
             args.aws_access_key_id, args.aws_secret_access_key, args.aws_region_name)
-        ec2_image = aws_client.ec2_image_create(image_path, args.arch)
         instance_name = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
         instance_ip = aws_client.ec2_instance_create(
             'jcs-{}'.format(instance_name),
-            args.instance_type, ec2_image['image_name'], args.key_name,
+            args.instance_type, args.image_name, args.key_name,
             tags={'jcs-jenkins-name': args.jenkins_name,
                   'jcs-jenkins-url': args.jenkins_url})
 
     # Jenkins
-    jen_client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
-                                   args.jenkins_password)
     jen_client.create_node(
         instance_ip, args.jenkins_name, 'Running on AWS ({}, {}, {})'.format(
             instance_ip, instance_name, args.aws_region_name), args.jenkins_credential, '')
