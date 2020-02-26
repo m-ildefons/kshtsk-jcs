@@ -39,13 +39,26 @@ def _parser():
     group_aws.add_argument('--aws-region-name',
                            default='eu-central-1', help='The AWS region ')
 
+    # global OpenStack vars
+    group_os = parser.add_argument_group('openstack')
+    group_os.add_argument('--os-cloud',
+                           default=os.getenv('OS_CLOUD'),
+                           help='The OS_CLOUD variable '
+                           '(can be set as env var "OS_CLOUD")')
+    group_os.add_argument('--os-network-fixed', default='fixed',
+                                             help='Fixed (private) network. Default: %(default)s')
+    group_os.add_argument('--os-network-public', default='floating',
+                                             help='Public network. Default: %(default)s')
+    group_os.add_argument('--os-security-groups', default=[],
+                                           help='Security groups. Default: %(default)s')
+
     ### subparsers
     subparsers = parser.add_subparsers(title='commands')
 
     ### all-in-one - create node as jenkins slave
     parser_create = subparsers.add_parser(
         'create', help='Create a new Jenkins slave')
-    parser_create.add_argument('--cloud', default='ec2', choices=['ec2'],
+    parser_create.add_argument('--cloud', default='ec2', choices=['ec2', 'openstack'],
                                help='On which cloud')
     parser_create.add_argument(
         '--arch', default='x86_64', choices=['x86_64', 'aarch64'],
@@ -68,7 +81,8 @@ def _parser():
     ### all-in-one - delete node as jenkins slave
     parser_delete = subparsers.add_parser(
         'delete', help='Delete a new Jenkins slave')
-    parser_delete.add_argument('--cloud', default='ec2', choices=['ec2'],
+    parser_delete.add_argument('--cloud', default='ec2',
+                               choices=['ec2', 'openstack'],
                                help='On which cloud')
     parser_delete.add_argument('jenkins_name', metavar='jenkins-name',
                                help='The name of the new jenkins slave')
@@ -125,6 +139,24 @@ def _parser():
                                                 help='Instance Id')
     parser_aws_ec2_instance_delete.set_defaults(func=_do_aws_ec2_instance_delete)
 
+    # OpenStack instance create
+    parser_os_instance_create = subparsers.add_parser(
+        'os-instance-create', help='Create a new instance on OpenStack')
+    parser_os_instance_create.add_argument('name', help='Instance name')
+    parser_os_instance_create.add_argument(
+        'instance_type', metavar='instance-type', help='Openstack flavor')
+    parser_os_instance_create.add_argument(
+        'image_name', metavar='image-name', help='Image name')
+    parser_os_instance_create.add_argument(
+        'key_name', metavar='key-name', help='Keypair name')
+    parser_os_instance_create.set_defaults(func=_do_os_instance_create)
+
+    # OpenStack, instance delete
+    parser_os_instance_delete = subparsers.add_parser(
+        'os-instance-delete', help='Delete a instance')
+    parser_os_instance_delete.add_argument('id',
+                                           help='Instance Id or name')
+    parser_os_instance_delete.set_defaults(func=_do_os_instance_delete)
     return parser
 
 
@@ -143,17 +175,23 @@ def _do_create(args):
         # create ec2 ami
         aws_client = aws.AWSClient(
             args.aws_access_key_id, args.aws_secret_access_key, args.aws_region_name)
-        instance_name = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
-        instance_ip = aws_client.ec2_instance_create(
-            'jcs-{}'.format(instance_name),
+        instance_name = 'jcs-' + ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+        instance_ip = aws_client.ec2_instance_create(instance_name,
             args.instance_type, args.image_name, args.key_name,
             tags={'jcs-jenkins-name': args.jenkins_name,
                   'jcs-jenkins-url': args.jenkins_url})
+    elif args.cloud == 'openstack':
+        from . import openst
+        client = openst.OpenstClient(args.os_cloud)
+        instance_name = 'jcs-{}'.format(args.jenkins_name)
+        instance_ip = client.os_instance_create(
+            instance_name, args.instance_type, args.image_name, args.key_name,
+            args.os_network_fixed, args.os_network_public, args.os_security_groups)
 
     # Jenkins
     jen_client.create_node(
         instance_ip, args.jenkins_name, 'Running on AWS ({}, {}, {})'.format(
-            instance_ip, instance_name, args.aws_region_name), args.jenkins_credential, '')
+            instance_ip, instance_name, args.cloud), args.jenkins_credential, '')
 
 
 def _do_delete(args):
@@ -169,6 +207,26 @@ def _do_delete(args):
         tags={'jcs-jenkins-name': args.jenkins_name,
               'jcs-jenkins-url': args.jenkins_url}
         aws_client.ec2_instance_delete_by_tags(tags)
+    if args.cloud == 'openstack':
+        from . import openst
+        client = openst.OpenstClient(args.os_cloud)
+        instance_name = 'jcs-{}'.format(args.jenkins_name)
+        client.os_instance_delete(instance_name)
+
+
+def _do_os_instance_create(args):
+    from . import openst
+    client = openst.OpenstClient(args.os_cloud)
+    client.os_instance_create(args.name, args.instance_type,
+                              args.image_name, args.key_name,
+                              args.os_network_fixed, args.os_network_public,
+                              args.os_security_groups)
+
+
+def _do_os_instance_delete(args):
+    from . import openst
+    client = openst.OpenstClient(args.os_cloud)
+    client.os_instance_delete(args.id)
 
 
 def _do_aws_ec2_instance_create(args):

@@ -4,7 +4,7 @@ Jenkins Cloud Slave (jcs)
 `Jenkins Cloud Slave`_ is a command line interface to create
 `Jenkins`_ slave servers. With that, new Jenkins slaves can
 be dynamically created eg. on public clouds (AWS) or private
-clouds (OpenStack, not yet implemented!).
+clouds (OpenStack).
 
 Installation
 ============
@@ -32,6 +32,12 @@ When doing something with AWS, also theses are needed::
 
   export AWS_ACCESS_KEY_ID=my-access-key
   export AWS_SECRET_ACCESS_KEY=my-secret-access-key
+
+When doing something with OpenStack::
+
+  export OS_CLOUD=my-cloud
+
+where `my-cloud` needs to be defined in the `clouds.yaml` file
 
 All-in-one - Create a Jenkins slave on AWS/EC2 from an OBS image
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
