@@ -28,7 +28,7 @@ For Jenkins::
   export JENKINS_USERNAME=user
   export JENKINS_PASSWORD=superSecure!
 
-When doing something with AWS, also theses are needed::
+When doing something with AWS, also these are needed::
 
   export AWS_ACCESS_KEY_ID=my-access-key
   export AWS_SECRET_ACCESS_KEY=my-secret-access-key
@@ -37,7 +37,7 @@ When doing something with OpenStack::
 
   export OS_CLOUD=my-cloud
 
-where `my-cloud` needs to be defined in the `clouds.yaml` file
+where `my-cloud` needs to be defined in the `clouds.yaml` file.
 
 All-in-one - Create a Jenkins slave on AWS/EC2 from an OBS image
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -94,14 +94,14 @@ Similar to `jenkins-node-add`, removing the node can be done with::
 The environment variables (`JENKINS_*`) or command line switches (`--jenkins-*`)
 must be set when executing this command.
 
-Download a OBS image
+Download an OBS image
 ++++++++++++++++++++
 
-Downloading a image from OBS::
+Downloading an image from OBS::
 
   jcs obs-image-download http://download.suse.de/ibs/Devel:/Storage:/images/openSUSE_Leap_15.1/minimal-openSUSE-Leap-15.1.x86_64-ec2-hvm.raw.xz
 
-The downloaded images are cached unter `~/.cache/jcs`.
+The downloaded images are cached under `~/.cache/jcs`.
 
 .. _`Jenkins Cloud Slave`: https://github.com/toabctl/jcs
 .. _`Jenkins`: https://jenkins.io/
