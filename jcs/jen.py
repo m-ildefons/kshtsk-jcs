@@ -33,8 +33,12 @@ class JenkinsClient:
 
     def delete_node(self, node_name):
         print('Jenkins node "{}" deleting...'.format(node_name))
-        self._client.delete_node(node_name)
-        print('Jenkins node "{}" deleted'.format(node_name))
+        nodes = self._client.get_nodes()
+        if node_name in nodes.keys():
+            self._client.delete_node(node_name)
+            print('Jenkins node "{}" deleted'.format(node_name))
+        else:
+            print('Jenkins node "{}" not found. Not deleted'.format(node_name))
 
     def create_node(self, node_hostname, node_name, node_desc, credential_desc,
                     node_labels, force=True):
