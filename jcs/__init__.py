@@ -197,9 +197,13 @@ def _do_create(args):
 def _do_delete(args):
     from . import jen
     # Jenkins
-    jen_client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
-                                   args.jenkins_password)
-    jen_client.delete_node(args.jenkins_name)
+    try:
+        jen_client = jen.JenkinsClient(args.jenkins_url, args.jenkins_username,
+                                       args.jenkins_password)
+        jen_client.delete_node(args.jenkins_name)
+    except Exception as e:
+        print("Unable to remove jenkins node {}".format(args.jenkins_name))
+
     if args.cloud == 'ec2':
         from . import aws
         aws_client = aws.AWSClient(
