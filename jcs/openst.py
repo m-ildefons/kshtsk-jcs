@@ -41,7 +41,7 @@ class OpenstClient:
         # create instance
         instance = self._conn.create_server(
             instance_name, image=image, flavor=instance_type, key_name=key_name,
-            network=network_fixed, security_groups=security_groups,
+            network=network_public, security_groups=security_groups,
             wait=True, auto_ip=True)
 
         # add floating ip
