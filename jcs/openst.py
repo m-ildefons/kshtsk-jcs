@@ -36,12 +36,12 @@ class OpenstClient:
         if not instance_type:
             raise Exception('OS instance type (flavor) "{}" not found'.format(instance_type))
 
-        network_fixed = self._conn.get_network(network_fixed)
+        network_fixed = self._conn.get_network(network_fixed) or network_public
 
         # create instance
         instance = self._conn.create_server(
             instance_name, image=image, flavor=instance_type, key_name=key_name,
-            network=network_public, security_groups=security_groups,
+            network=network_fixed, security_groups=security_groups,
             wait=True, auto_ip=True)
 
         # add floating ip
